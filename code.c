@@ -1,2 +1,3 @@
 #include<stdio.h>
-print("1");
+printf("1");
+printf("change");
