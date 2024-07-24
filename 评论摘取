@@ -11,10 +11,10 @@
 int main()
 {
 	char text[1024];
-	const char *rstr1 = "<h5 class=\"user-bar-uname\">\\([^<]\\+\\?\\)</h5>";
-	const char *rstr2 = "<span class=\"type-text\"\\([^<]\\+\\?\\)</span>";
-	const char *rstr3 = "<span class=\"time\">\\([^<]\\+\\?\\)</span>";
-	const char *rstr4 = "<div class=\"area\">\\([^<]\\+\\?\\)</div>";
+	const char *rstr1 = "<h5 class=\"user-bar-uname\">\\([^<]\\+\\?\\)</h5>";//发言用户名
+	const char *rstr2 = "<span class=\"type-text\"\\([^<]\\+\\?\\)</span>";//评论内容
+	const char *rstr3 = "<span class=\"time\">\\([^<]\\+\\?\\)</span>";//发送时间
+	const char *rstr4 = "<div class=\"area\">\\([^<]\\+\\?\\)</div>";//所在地
         //const char *rstr = "<address>\\([^<]\\+\\?\\)</address>";
         regex_t name_Reg,text_Reg,time_Reg,locate_Reg;
         regcomp(&name_Reg,rstr1,0);
