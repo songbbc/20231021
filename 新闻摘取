@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include<string.h>
+#include <sys/types.h>
+#include<sys/stat.h>
+#include<sys/fcntl.h>
+#include<regex.h>
+#include<sys/mman.h>
+
+int main()
+{
+	char text[1024];
+	const char *rstr1 = "<a href=\\([^>]\\+\\?\\)>";//新闻地址
+	const char *rstr2 = "<img src=\\([^>]\\+\\?\\)>";//配图地址
+	const char *rstr3 = "<div class=\"title\"\\([^<]\\+\\?\\)</div>";//新闻标题
+        //const char *rstr = "<address>\\([^<]\\+\\?\\)</address>";
+        regex_t news_Reg,img_Reg,title_Reg;
+        regcomp(&news_Reg,rstr1,0);
+	regcomp(&img_Reg,rstr2,0);
+	regcomp(&title_Reg,rstr3,0);
+        regmatch_t ma[2];
+        int fd,size;
+        fd=open("news.text",O_RDWR);
+        size =lseek(fd,0,SEEK_END);
+        char *data=NULL;
+        data=mmap(NULL,size,PROT_READ|PROT_WRITE,MAP_PRIVATE,fd,0);
+        while((regexec(&news_Reg,data,2,ma,0))==0)
+        {
+                bzero(text,1024);
+                snprintf(text,ma[1].rm_eo - ma[1].rm_so + 1,"%s",data+ma[1].rm_so);
+                printf("提取成功1:%s\n",text);
+		data+=ma[0].rm_eo;
+	  if((regexec(&img_Reg,data,2,ma,0))==0)
+          {
+                  bzero(text,1024);
+                  snprintf(text,ma[1].rm_eo - ma[1].rm_so + 1,"%s",data+ma[1].rm_so);
+                  printf("提取成功2:%s\n",text);
+                  data+=ma[0].rm_eo;
+          }
+          if((regexec(&title_Reg,data,2,ma,0))==0)
+          {
+                  bzero(text,1024);
+                  snprintf(text,ma[1].rm_eo - ma[1].rm_so + 1,"%s",data+ma[1].rm_so);
+                  printf("提取成功3:%s\n",text);
+                  data+=ma[0].rm_eo;
+          }
+        }
+	regfree(&news_Reg);
+        regfree(&img_Reg);
+	regfree(&title_Reg);
+        return 0;
+}
