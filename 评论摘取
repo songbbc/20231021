@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include<string.h>
+#include <sys/types.h>
+#include<sys/stat.h>
+#include<sys/fcntl.h>
+#include<regex.h>
+#include<sys/mman.h>
+
+int main()
+{
+	char text[1024];
+	const char *rstr1 = "<h5 class=\"user-bar-uname\">\\([^<]\\+\\?\\)</h5>";
+	const char *rstr2 = "<span class=\"type-text\"\\([^<]\\+\\?\\)</span>";
+	const char *rstr3 = "<span class=\"time\">\\([^<]\\+\\?\\)</span>";
+	const char *rstr4 = "<div class=\"area\">\\([^<]\\+\\?\\)</div>";
+        //const char *rstr = "<address>\\([^<]\\+\\?\\)</address>";
+        regex_t name_Reg,text_Reg,time_Reg,locate_Reg;
+        regcomp(&name_Reg,rstr1,0);
+	regcomp(&text_Reg,rstr2,0);
+	regcomp(&time_Reg,rstr3,0);
+	regcomp(&locate_Reg,rstr4,0);
+        regmatch_t ma[2];
+        int fd,size;
+        fd=open("talk.text",O_RDWR);
+        size =lseek(fd,0,SEEK_END);
+        char *data=NULL;
+        data=mmap(NULL,size,PROT_READ|PROT_WRITE,MAP_PRIVATE,fd,0);
+        while((regexec(&name_Reg,data,2,ma,0))==0)
+        {
+                bzero(text,1024);
+                snprintf(text,ma[1].rm_eo - ma[1].rm_so + 1,"%s",data+ma[1].rm_so);
+                printf("提取成功1:%s\n",text);
+                data+=ma[0].rm_eo;
+          if((regexec(&text_Reg,data,2,ma,0))==0)
+          {
+                  bzero(text,1024);
+                  snprintf(text,ma[1].rm_eo - ma[1].rm_so + 1,"%s",data+ma[1].rm_so);
+                  printf("提取成功2:%s\n",text);
+                  data+=ma[0].rm_eo;
+          }
+          if((regexec(&time_Reg,data,2,ma,0))==0)
+          {
+                  bzero(text,1024);
+                  snprintf(text,ma[1].rm_eo - ma[1].rm_so + 1,"%s",data+ma[1].rm_so);
+                  printf("提取成功3:%s\n",text);
+                  data+=ma[0].rm_eo;
+          }
+          if((regexec(&locate_Reg,data,2,ma,0))==0)
+          {
+                  bzero(text,1024);
+                  snprintf(text,ma[1].rm_eo - ma[1].rm_so + 1,"%s",data+ma[1].rm_so);
+                  printf("提取成功4:%s\n",text);
+                  data+=ma[0].rm_eo;
+          }
+
+        }
+	regfree(&name_Reg);
+        regfree(&text_Reg);
+	regfree(&time_Reg);
+	regfree(&locate_Reg);
+        return 0;
+}
